@@ -75,7 +75,7 @@ function jsCheckCode(src, jsonAnswer) {
 	}
 
 	// 1. 檢查語法是否有效
-	[is_syntax_ok, result] = checkSyntax(`(x) => { ${src} }`);
+	[is_syntax_ok, result] = checkSyntax(`(x) => { ${src}\n }`);
 	if (!is_syntax_ok) { // 語法無效，回傳錯誤訊息
 		return result;
 	}
