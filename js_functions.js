@@ -80,6 +80,67 @@ function jsCheckCode(src, jsonAnswer) {
 		return result;
 	}
 
+	// 2. 檢查執行答案是否正確
 	[is_answer_ok, result] = checkAnswer(src, jsonAnswer);
+	return result;
+}
+
+/// 測試程式碼執行結果
+///
+/// 輸入：函式內的程式碼、測試輸入值
+/// 輸出：程式錯誤訊息，或函式執行的回傳值
+function jsTestCode(src, valueString) {
+	const syntax_ok_message = "語法檢查正確！";
+	const syntax_error_message = "未通過，語法錯誤。請修正程式碼再送出。";
+
+	const NaN_error_message = "輸入值非數字。";
+	const running_error_message = "有未定義的變數或函數。";
+	const reference_error_message = "使用了未定義的變數或函式。";
+	const undefined_error_message = "回傳值未定義。";
+
+	// 語法檢查
+	function checkSyntax (src) {
+		try {
+			let syntax = esprima.parseScript(src); // parse 語法
+			return [true, syntax_ok_message];
+		} catch (e) {
+			if (e.toString().includes("Line")) {
+				let tmp = e.toString().substring(e.toString().indexOf("Line")+5);
+				let n = Number(tmp.substring(0, tmp.indexOf(":")));
+				let msg = `未通過，第 ${n} 行有語法錯誤。請修正程式碼再送出。`;
+				return [false, msg];
+			}
+			return [false, syntax_error_message];
+		}
+	}
+
+	function testRun (src, vString) {
+		let v = Number(vString);
+		if (isNaN(v)) {
+			return [false, NaN_error_message];
+		}
+		let func = new Function("x", src);
+		try {
+			let res = func(v);
+			if (!res) {
+				return [false, undefined_error_message];
+			}
+			return [true, String(res)];
+		} catch (e) {
+			if (e.toString().includes("not defined")) {
+				return [false, reference_error_message];
+			}
+			return [false, running_error_message];
+		}
+	}
+
+	// 1. 檢查語法是否有效
+	[is_syntax_ok, result] = checkSyntax(`(x) => { ${src}\n }`);
+	if (!is_syntax_ok) { // 語法無效，回傳錯誤訊息
+		return result;
+	}
+
+	// 2. 執行函式，回傳執行結果
+	[is_run_ok, result] = testRun(src, valueString);
 	return result;
 }
