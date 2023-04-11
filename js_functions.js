@@ -93,7 +93,7 @@ function jsTestCode(src, valueString) {
 	const syntax_ok_message = "語法檢查正確！";
 	const syntax_error_message = "未通過，語法錯誤。請修正程式碼再送出。";
 
-	const NaN_error_message = "輸入值非數字。";
+	const type_error_message = "輸入值非數字、字串或陣列。";
 	const running_error_message = "有未定義的變數或函數。";
 	const reference_error_message = "使用了未定義的變數或函式。";
 	const undefined_error_message = "回傳值未定義。";
@@ -115,10 +115,12 @@ function jsTestCode(src, valueString) {
 	}
 
 	function testRun (src, vString) {
-		let v = Number(vString);
-		if (isNaN(v)) {
-			return [false, NaN_error_message];
-		}
+		// 嘗試將 vString 解析為數值、字串或陣列，若都失敗，則回報錯誤訊息
+        let v = (new Function("return " + vString + ";"))();
+        if (!(typeof(v) === "number" || typeof(v) === "string" || Object.prototype.toString.call(v) === "[object Array]")) {
+        	return [false, type_error_message];
+        }
+
 		let func = new Function("x", src);
 		try {
 			let res = func(v);
