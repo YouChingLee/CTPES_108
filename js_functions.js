@@ -59,8 +59,8 @@ function jsCheckCode(src, jsonAnswer) {
 				if (!res) {
 					return [false, undefined_error_message];
 				}
-				// 答案錯誤
-				if ( ansObject.dataOut != func(ansObject.dataIn) ) {
+				// 檢查是否答案錯誤 (將答案一律轉成 string 來比較，則無論是數值、字串、或陣列皆可比較)
+				if ( ansObject.dataOut.toString() != func(ansObject.dataIn).toString() ) {
 					return [false, answer_error_message];
 				}
 			}
